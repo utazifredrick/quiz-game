@@ -75,6 +75,11 @@ body {
 .answer-container {
   display: flex;
   flex-direction: column;
+}
+
+.timer {
+  color: #e86a33;
+  font-weight: 700;
   gap: 10px;
   margin-bottom: 25px;
 }

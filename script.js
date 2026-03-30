@@ -7,6 +7,7 @@ const questionText = document.getElementById("question-text");
 const currentQuestionSpan = document.getElementById("current-question");
 const totalQuestionSpan = document.getElementById("total-questions");
 const scoreSpan = document.getElementById("score");
+const timerSpan = document.getElementById("timer");
 const answersContainer = document.getElementById("answers-container");
 const progressBar = document.getElementById("progress");
 const finalScoreSpan = document.getElementById("final-score");
@@ -77,6 +78,9 @@ const quizQuestions = [
 let currentQuestionIndex = 0;
 let score = 0;
 let answerDisabled = false;
+let questionTimer = null;
+let timeLeft = 0;
+const QUESTION_TIME = 5;
 
 totalQuestionSpan.textContent = quizQuestions.length;
 maxScoreSpan.textContent = quizQuestions.length;
@@ -101,6 +105,9 @@ function startQuiz() {
 function showQuestion() {
   // reset vars
   answerDisabled = false;
+  clearQuestionTimer();
+  timeLeft = QUESTION_TIME;
+  updateTimerDisplay();
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
@@ -126,6 +133,15 @@ function showQuestion() {
 
     answersContainer.appendChild(button);
   });
+
+  questionTimer = setInterval(() => {
+    timeLeft -= 1;
+    updateTimerDisplay();
+
+    if (timeLeft <= 0) {
+      handleTimeout();
+    }
+  }, 1000);
 }
 
 function selectAnswer(event) {
@@ -133,6 +149,7 @@ function selectAnswer(event) {
   if (answerDisabled) return;
 
   answerDisabled = true;
+  clearQuestionTimer();
 
   const selectedButton = event.target;
   const isCorrect = selectedButton.dataset.correct === "true";
@@ -165,7 +182,43 @@ function selectAnswer(event) {
   }, 1000);
 }
 
+function handleTimeout() {
+  if (answerDisabled) return;
+
+  answerDisabled = true;
+  clearQuestionTimer();
+
+  Array.from(answersContainer.children).forEach((button) => {
+    button.disabled = true;
+    if (button.dataset.correct === "true") {
+      button.classList.add("correct");
+    }
+  });
+
+  setTimeout(() => {
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < quizQuestions.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1000);
+}
+
+function clearQuestionTimer() {
+  if (questionTimer !== null) {
+    clearInterval(questionTimer);
+    questionTimer = null;
+  }
+}
+
+function updateTimerDisplay() {
+  timerSpan.textContent = `${timeLeft}s`;
+}
+
 function showResults() {
+  clearQuestionTimer();
   quizScreen.classList.remove("active");
   resultScreen.classList.add("active");
 
